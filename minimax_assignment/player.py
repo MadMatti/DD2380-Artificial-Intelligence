@@ -79,9 +79,8 @@ class PlayerControllerMinimax(PlayerController):
                 best_move = curr_move
             except:
                 timeout = True
-        
-        return ACTION_TO_STR[best_move]
 
+        return ACTION_TO_STR[best_move]
 
     def best_move_search(self, root_node, depth, initial_time):
         """
@@ -107,10 +106,9 @@ class PlayerControllerMinimax(PlayerController):
 
         return children_nodes[best_score_index].move
 
-
     def alphabeta_pruning(self, game_node, depth_level, alpha, beta, curr_player, start_time):
 
-        if time.time() - start_time > 0.055:
+        if time.time() - start_time > 0.0575:
             raise TimeoutError
 
         node_children = game_node.compute_and_get_children()
@@ -122,7 +120,8 @@ class PlayerControllerMinimax(PlayerController):
         elif curr_player == 0:
             heuristic_value = -math.inf
             for child in node_children:
-                heuristic_value = max(heuristic_value, self.alphabeta_pruning(child, depth_level - 1, alpha, beta, 1, start_time))
+                heuristic_value = max(heuristic_value,
+                                      self.alphabeta_pruning(child, depth_level - 1, alpha, beta, 1, start_time))
                 alpha = max(alpha, heuristic_value)
                 if alpha >= beta:
                     break
@@ -130,13 +129,13 @@ class PlayerControllerMinimax(PlayerController):
         else:
             heuristic_value = math.inf
             for child in node_children:
-                heuristic_value = min(heuristic_value, self.alphabeta_pruning(child, depth_level - 1, alpha, beta, 0, start_time))
+                heuristic_value = min(heuristic_value,
+                                      self.alphabeta_pruning(child, depth_level - 1, alpha, beta, 0, start_time))
                 beta = min(beta, heuristic_value)
                 if alpha >= beta:
                     break
 
         return heuristic_value
-
 
     def heuristic_score(self, game_node):
         """
@@ -150,15 +149,17 @@ class PlayerControllerMinimax(PlayerController):
         heuristic_value = 0
 
         for fish_id in game_node.state.fish_positions:
-            distance = self.manhattan_distance(game_node.state.fish_positions[fish_id], game_node.state.hook_positions[0])
+            distance = self.manhattan_distance(game_node.state.fish_positions[fish_id],
+                                               game_node.state.hook_positions[0])
 
             if distance == 0 and game_node.state.fish_scores[fish_id] > 0:
                 return math.inf
-            heuristic_value = max(heuristic_value, game_node.state.fish_scores[fish_id] / math.exp(distance))
 
-        return heuristic_value + 2*score_difference
+            # Adjust weights for distance and fish scores
+            heuristic_value += game_node.state.fish_scores[fish_id] / math.exp(distance)
 
-    
+        return heuristic_value + 2 * score_difference + 0.2 * game_node.depth
+
     def manhattan_distance(self, pos1, pos2):
         """
         Manhattan distance between two positions
@@ -173,8 +174,3 @@ class PlayerControllerMinimax(PlayerController):
         x_delta = abs(pos1[0] - pos2[0])
         x_dist = min(x_delta, 20 - x_delta)
         return x_dist + y_dist
-        
-
-        
-
-        
