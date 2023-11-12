@@ -174,7 +174,7 @@ class PlayerControllerMinimax(PlayerController):
         x_dist = min(x_delta, 20 - x_delta)
         return x_dist + y_dist
         
-
+        
         
 
         
