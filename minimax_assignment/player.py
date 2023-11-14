@@ -158,23 +158,33 @@ class PlayerControllerMinimax(PlayerController):
         :return: heuristic score
         :rtype: float
         """
-        score_difference = game_node.state.player_scores[0] - game_node.state.player_scores[1]
+        player_score = game_node.state.player_scores[0]
+        opponent_score = game_node.state.player_scores[1]
+        score_difference = player_score - opponent_score
+    
         heuristic_value = 0
-
-        for fish_id in game_node.state.fish_positions:
-            distance = self.manhattan_distance(game_node.state.fish_positions[fish_id],
-                                               game_node.state.hook_positions[0])
-                                               
-            opponent_distance = self.manhattan_distance(game_node.state.fish_positions[fish_id], game_node.state.hook_positions[1])
-
-
-            if distance == 0 and game_node.state.fish_scores[fish_id] > 0:
-                return math.inf
-
-            # Adjust weights for distance and fish scores
-            heuristic_value += game_node.state.fish_scores[fish_id] / math.exp(distance) - 0.5 * game_node.state.fish_scores[fish_id] / math.exp(opponent_distance)
-
-        return heuristic_value + 2.5 * score_difference + 0.2 * game_node.depth
+    
+        # Factor in distance to nearest fish and fish scores
+        for fish_id, fish_pos in game_node.state.fish_positions.items():
+            fish_score = game_node.state.fish_scores[fish_id]
+            player_distance = self.manhattan_distance(fish_pos, game_node.state.hook_positions[0])
+            opponent_distance = self.manhattan_distance(fish_pos, game_node.state.hook_positions[1])
+    
+            # Fishes that are closer and with higher score are more valuable
+            if player_distance != 0:
+                heuristic_value += (fish_score / player_distance)
+            if opponent_distance != 0:
+                heuristic_value -= (fish_score / opponent_distance) * 0.5
+    
+        # If the player got at least one fish, add a bonus to the heuristic value
+        if game_node.state.player_caught[0] != -1:
+            caught_fish_score = game_node.state.fish_scores[game_node.state.player_caught[0]]
+            heuristic_value += caught_fish_score * 2 
+    
+        heuristic_value += 2.5 * score_difference
+        heuristic_value += 0.1 * game_node.depth
+    
+        return heuristic_value
 
     def manhattan_distance(self, pos1, pos2):
         """
