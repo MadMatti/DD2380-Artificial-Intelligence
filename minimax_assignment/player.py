@@ -30,6 +30,7 @@ class PlayerControllerMinimax(PlayerController):
 
     def __init__(self):
         super(PlayerControllerMinimax, self).__init__()
+        self.transposition_table = {}
 
     def player_loop(self):
         """
@@ -100,6 +101,8 @@ class PlayerControllerMinimax(PlayerController):
         beta = math.inf
 
         children_nodes = root_node.compute_and_get_children()
+        children_nodes.sort(key=self.heuristic_score, reverse=True)
+
 
         node_scores = [self.alphabeta_pruning(child, depth, alpha, beta, 1, initial_time) for child in children_nodes]
         best_score_index = node_scores.index(max(node_scores))
@@ -107,8 +110,14 @@ class PlayerControllerMinimax(PlayerController):
         return children_nodes[best_score_index].move
 
     def alphabeta_pruning(self, game_node, depth_level, alpha, beta, curr_player, start_time):
+        
+        state_hash = self.get_hash_state(game_node)
+        if state_hash in self.transposition_table:
+            depth, score = self.transposition_table[state_hash]
+            if depth >= depth_level:
+                return score
 
-        if time.time() - start_time > 0.0575:
+        if time.time() - start_time > 0.055:
             raise TimeoutError
 
         node_children = game_node.compute_and_get_children()
@@ -116,6 +125,8 @@ class PlayerControllerMinimax(PlayerController):
 
         if depth_level == 0 or len(node_children) == 0:
             heuristic_value = self.heuristic_score(game_node)
+            self.transposition_table[state_hash] = (depth_level, heuristic_value)
+            return heuristic_value
 
         elif curr_player == 0:
             heuristic_value = -math.inf
@@ -134,6 +145,8 @@ class PlayerControllerMinimax(PlayerController):
                 beta = min(beta, heuristic_value)
                 if alpha >= beta:
                     break
+        
+        self.transposition_table[state_hash] = (depth_level, heuristic_value)
 
         return heuristic_value
 
@@ -151,14 +164,17 @@ class PlayerControllerMinimax(PlayerController):
         for fish_id in game_node.state.fish_positions:
             distance = self.manhattan_distance(game_node.state.fish_positions[fish_id],
                                                game_node.state.hook_positions[0])
+                                               
+            opponent_distance = self.manhattan_distance(game_node.state.fish_positions[fish_id], game_node.state.hook_positions[1])
+
 
             if distance == 0 and game_node.state.fish_scores[fish_id] > 0:
                 return math.inf
 
             # Adjust weights for distance and fish scores
-            heuristic_value += game_node.state.fish_scores[fish_id] / math.exp(distance)
+            heuristic_value += game_node.state.fish_scores[fish_id] / math.exp(distance) - 0.5 * game_node.state.fish_scores[fish_id] / math.exp(opponent_distance)
 
-        return heuristic_value + 2 * score_difference + 0.2 * game_node.depth
+        return heuristic_value + 2.5 * score_difference + 0.2 * game_node.depth
 
     def manhattan_distance(self, pos1, pos2):
         """
@@ -173,5 +189,18 @@ class PlayerControllerMinimax(PlayerController):
         y_dist = abs(pos1[1] - pos2[1])
         x_delta = abs(pos1[0] - pos2[0])
         x_dist = min(x_delta, 20 - x_delta)
+
         return x_dist + y_dist
-        return x_dist + y_dist
+
+
+    def get_hash_state(self, game_node):
+        """
+        Generate a unique hash for a given game state.
+        :param game_node: The current game node
+        :return: A unique hash string
+        """
+        state = game_node.state
+        fish_positions = state.fish_positions
+        hook_positions = state.hook_positions
+        hash_key = str(hook_positions) + str(fish_positions)
+        return hash_key
