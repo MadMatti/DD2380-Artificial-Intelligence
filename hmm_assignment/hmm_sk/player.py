@@ -3,6 +3,41 @@
 from player_controller_hmm import PlayerControllerHMMAbstract
 from constants import *
 import random
+import math
+import sys
+
+epsilon = sys.float_info.epsilon
+
+def forward(O, A, B, pi):
+
+    forward_probs = [[0.0 for i in range(len(A[0]))] for j in range(O)]
+    alpha_T = [0.0 for i in range(O)]
+    pi = pi[0]
+
+    for t in range(len(O)):
+        alpha_t = 0.0
+        alpha_ij = 0.0
+
+        for i in range(len(A[0])):
+            if t == 0:
+                forward_probs[t][i] = pi[i] * B[i][O[t]]
+                alpha_ij += pi[i] * B[i][O[t]]
+                alpha_t = alpha_ij
+            else:
+                alpha_ij = 0.0
+                for j in range(len(A[0])):
+                    alpha_ij += forward_probs[t-1][j] * A[j][i] * B[i][O[t]]
+                forward_probs[t][i] = alpha_ij
+                alpha_t += alpha_ij
+        
+        alpha_T[t] = 1/(alpha_t + epsilon)
+        forward_probs = [alpha_T[t] * forward_probs[t][k] for k in range(len(A[0]))]
+    
+    return forward_probs, alpha_T
+
+def backward(O, A, B, alpha_T):
+    pass
+
 
 
 class PlayerControllerHMM(PlayerControllerHMMAbstract):
