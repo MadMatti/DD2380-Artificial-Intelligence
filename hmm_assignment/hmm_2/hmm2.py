@@ -53,32 +53,45 @@ def createMatrix(data, no_of_rows, no_of_columns):
     return matrix
 
 
-def forward_algorithm(transition_matrix, emission_matrix, initial_state_probability_matrix, emissions_sequence):
-    alpha = np.zeros((len(transition_matrix), len(emissions_sequence)))
+def viterbi_algorithm(transition_matrix, emission_matrix, initial_state_probability_matrix, emissions_sequence):
     T = len(emissions_sequence)
     N = len(transition_matrix)
-    # Initial alpha
-    for i in range(N):
-        # Initial state times emission probability given emission
-        alpha[i][0] = initial_state_probability_matrix[0][i] * emission_matrix[i][emissions_sequence[0]]
-    for t in range(1, T):
-        for i in range(N):
-            for j in range(N):
-                alpha[i][t] += alpha[j][t - 1] * transition_matrix[j][i] * emission_matrix[i][emissions_sequence[t]]
 
-    answer = 0
+    # Initialization
+    V = np.zeros((T, N))
+    BP = np.zeros((T, N), dtype=int)
+
     for i in range(N):
-        answer += alpha[i][T - 1]
-    return answer
+        V[0, i] = initial_state_probability_matrix[0, i] * emission_matrix[i, emissions_sequence[0]]
+        BP[0, i] = 0
+
+    # Recursion
+    for t in range(1, T):
+        for j in range(N):
+            prob_states = V[t - 1, :] * transition_matrix[:, j] * emission_matrix[j, emissions_sequence[t]]
+            BP[t, j] = np.argmax(prob_states)
+            V[t, j] = np.max(prob_states)
+
+    # Termination
+    best_last_state = np.argmax(V[T - 1, :])
+
+    # Backtrack
+    best_path = np.zeros(T, dtype=int)
+    best_path[T - 1] = best_last_state
+
+    for t in range(T - 2, -1, -1):
+        best_path[t] = BP[t + 1, best_path[t + 1]]
+
+    return best_path
 
 
 def main():
-    data = readData('data.txt')
-    transition_matrix, emission_matrix, initial_state_probability_matrix,  emission_sequence = readMatrix(data)
-    # transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence = readInputKattis()
+    # data = readData('data.txt')
+    # transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence = readMatrix(data)
+    transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence = readInputKattis()
 
-    ans = forward_algorithm(transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence)
-    print(ans)
+    ans = viterbi_algorithm(transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence)
+    print(" ".join(map(str, ans)))  # Output as space-separated string
 
 if __name__ == "__main__":
     main()
