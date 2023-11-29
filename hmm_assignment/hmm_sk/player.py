@@ -69,7 +69,7 @@ def backward_pass(A, B, pi, O, c):
         
         beta_list.append(t_beta_list)
 
-        return beta_list
+    return beta_list
 
 
 def calculate_gamma(A, B, O, alpha_list, beta_list): # seq = O N = len(A), T = len(O)
@@ -105,7 +105,7 @@ def calculate_gamma(A, B, O, alpha_list, beta_list): # seq = O N = len(A), T = l
         
         gamma_list.append(t_gamma_list)
 
-        return gamma_list, di_gamma_list
+    return gamma_list, di_gamma_list
 
 
 def re_estimate(gamma_list, di_gamma_list, O, lenA):
@@ -241,6 +241,7 @@ class PlayerControllerHMM(PlayerControllerHMMAbstract):
         """
         self.models = [HMM(1, N_EMISSIONS) for _ in range(N_SPECIES)]
         self.fish_obs = [(i,[]) for i in range(N_FISH)]
+        self.obs = []
 
     def update_model(self, model_id):
         A, B, pi = baum_welch(self.models[model_id].A, self.models[model_id].B, self.models[model_id].pi, self.obs)
