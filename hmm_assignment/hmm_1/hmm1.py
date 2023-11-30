@@ -73,9 +73,9 @@ def forward_algorithm(transition_matrix, emission_matrix, initial_state_probabil
 
 
 def main():
-    data = readData('data.txt')
-    transition_matrix, emission_matrix, initial_state_probability_matrix,  emission_sequence = readMatrix(data)
-    # transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence = readInputKattis()
+    # data = readData('data.txt')
+    # transition_matrix, emission_matrix, initial_state_probability_matrix,  emission_sequence = readMatrix(data)
+    transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence = readInputKattis()
 
     ans = forward_algorithm(transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence)
     print(ans)
