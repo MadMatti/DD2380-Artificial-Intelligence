@@ -19,8 +19,8 @@ def readMatrix(data):
                                                     int(initial_state_probability_data[0]),
                                                     int(initial_state_probability_data[1]))
 
-    # Combine the last two lines of data into a single list and convert it to a NumPy array
-    emission_sequence = np.array(data[3].split(' ')[1:], dtype=int)
+    # Convert emission_sequence from string to list of integers
+    emission_sequence = [int(x) for x in data[3].split(' ')[1:]]
 
     return transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence
 
@@ -37,17 +37,17 @@ def readInputKattis():
                                                     int(initial_state_probability_data[0]),
                                                     int(initial_state_probability_data[1]))
 
-    emission_sequence = [int(x) for x in input().split()]
-    emission_sequence = np.array(emission_sequence[1:], dtype=int)  # Convert to NumPy array
+    # Convert emission_sequence from string to list of integers
+    emission_sequence = [int(x) for x in input().split()][1:]
 
     return transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence
 
 
 def createMatrix(data, no_of_rows, no_of_columns):
-    matrix = np.zeros((no_of_rows, no_of_columns))
+    matrix = [[0 for _ in range(no_of_columns)] for _ in range(no_of_rows)]
     index = 2
-    for i in range(0, no_of_rows):
-        for j in range(0, no_of_columns):
+    for i in range(no_of_rows):
+        for j in range(no_of_columns):
             matrix[i][j] = data[index]
             index += 1
     return matrix
@@ -58,31 +58,31 @@ def viterbi_algorithm(transition_matrix, emission_matrix, initial_state_probabil
     N = len(transition_matrix)
 
     # Initialization
-    V = np.zeros((T, N))
-    BP = np.zeros((T, N), dtype=int)
+    V = [[0 for _ in range(N)] for _ in range(T)]
+    BP = [[0 for _ in range(N)] for _ in range(T)]
 
     for i in range(N):
-        V[0, i] = initial_state_probability_matrix[0, i] * emission_matrix[i, emissions_sequence[0]]
-        BP[0, i] = 0
+        V[0][i] = initial_state_probability_matrix[0][i] * emission_matrix[i][emissions_sequence[0]]
 
     # Recursion
     for t in range(1, T):
         for j in range(N):
-            prob_states = V[t - 1, :] * transition_matrix[:, j] * emission_matrix[j, emissions_sequence[t]]
-            BP[t, j] = np.argmax(prob_states)
-            V[t, j] = np.max(prob_states)
+            prob_states = [V[t - 1][i] * transition_matrix[i][j] * emission_matrix[j][emissions_sequence[t]] for i in range(N)]
+            BP[t][j] = prob_states.index(max(prob_states))
+            V[t][j] = max(prob_states)
 
     # Termination
-    best_last_state = np.argmax(V[T - 1, :])
+    best_last_state = V[T - 1].index(max(V[T - 1]))
 
     # Backtrack
-    best_path = np.zeros(T, dtype=int)
+    best_path = [0 for _ in range(T)]
     best_path[T - 1] = best_last_state
 
     for t in range(T - 2, -1, -1):
-        best_path[t] = BP[t + 1, best_path[t + 1]]
+        best_path[t] = BP[t + 1][best_path[t + 1]]
 
     return best_path
+
 
 
 def main():
