@@ -19,8 +19,8 @@ def readMatrix(data):
                                                     int(initial_state_probability_data[0]),
                                                     int(initial_state_probability_data[1]))
 
-    # Combine the last two lines of data into a single list and convert it to a NumPy array
-    emission_sequence = np.array(data[3].split(' ')[1:], dtype=int)
+    # Convert emission_sequence from string to list of integers
+    emission_sequence = [int(x) for x in data[3].split(' ')[1:]]
 
     return transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence
 
@@ -37,26 +37,26 @@ def readInputKattis():
                                                     int(initial_state_probability_data[0]),
                                                     int(initial_state_probability_data[1]))
 
-    emission_sequence = [int(x) for x in input().split()]
-    emission_sequence = np.array(emission_sequence[1:], dtype=int)  # Convert to NumPy array
-
+    # Convert emission_sequence from string to list of integers
+    emission_sequence = [int(x) for x in input().split()][1:]
+    
     return transition_matrix, emission_matrix, initial_state_probability_matrix, emission_sequence
 
 
 def createMatrix(data, no_of_rows, no_of_columns):
-    matrix = np.zeros((no_of_rows, no_of_columns))
+    matrix = [[0 for _ in range(no_of_columns)] for _ in range(no_of_rows)]
     index = 2
-    for i in range(0, no_of_rows):
-        for j in range(0, no_of_columns):
+    for i in range(no_of_rows):
+        for j in range(no_of_columns):
             matrix[i][j] = data[index]
             index += 1
     return matrix
 
 
 def forward_algorithm(transition_matrix, emission_matrix, initial_state_probability_matrix, emissions_sequence):
-    alpha = np.zeros((len(transition_matrix), len(emissions_sequence)))
     T = len(emissions_sequence)
     N = len(transition_matrix)
+    alpha = [[0 for _ in range(T)] for _ in range(N)]
     # Initial alpha
     for i in range(N):
         # Initial state times emission probability given emission

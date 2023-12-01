@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def readData(file_name):
     with open(file_name, 'r') as f:
         data = f.read().splitlines()
@@ -38,13 +35,21 @@ def readInputKattis():
 
 
 def createMatrix(data, no_of_rows, no_of_columns):
-    matrix = np.zeros((no_of_rows, no_of_columns))
+    matrix = [[0 for _ in range(no_of_columns)] for _ in range(no_of_rows)]
     index = 2
-    for i in range(0, no_of_rows):
-        for j in range(0, no_of_columns):
+    for i in range(no_of_rows):
+        for j in range(no_of_columns):
             matrix[i][j] = data[index]
             index += 1
     return matrix
+
+def matrixMultiplication(A, B):
+    result = [[0 for _ in range(len(B[0]))] for _ in range(len(A))]
+    for i in range(len(A)):
+        for j in range(len(B[0])):
+            for k in range(len(B)):
+                result[i][j] += A[i][k] * B[k][j]
+    return result
 
 
 def main():
@@ -53,11 +58,11 @@ def main():
 
     transition_matrix, emission_matrix, initial_state_probability_matrix = readInputKattis()
 
-    first_transition_matrix = np.dot(initial_state_probability_matrix, transition_matrix)
-    probability_matrix = np.dot(first_transition_matrix, emission_matrix)
+    first_transition_matrix = matrixMultiplication(initial_state_probability_matrix, transition_matrix)
+    probability_matrix = matrixMultiplication(first_transition_matrix, emission_matrix)
 
-    result = [probability_matrix.shape[0], probability_matrix.shape[1]]
-    result.extend(probability_matrix[0].tolist())
+    result = [len(probability_matrix), len(probability_matrix[0])]
+    result.extend(sum(probability_matrix, []))
     # round off all values of result to 2 decimal places
     result = [round(elem, 2) for elem in result]
     # convert all elements of result to string for kattis

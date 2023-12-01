@@ -265,7 +265,7 @@ class PlayerControllerHMM(PlayerControllerHMMAbstract):
         for i in range(len(self.fish_obs)):
                 self.fish_obs[i][1].append(observations[i])
 
-        if step < 10:
+        if step < 110: # max waiting time 110 -> 180 - 70 guesses (1 sec per guess)
             return None
 
         else:
