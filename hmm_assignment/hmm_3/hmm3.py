@@ -215,7 +215,9 @@ def baum_welch_algorithm(transition_matrix, emission_matrix, pi_matrix, emission
 
         if probability > log_prob:
             log_prob = probability
+            print("minore")
         else:
+            print(iteration)
             break
 
     return transition_new, emission_new
