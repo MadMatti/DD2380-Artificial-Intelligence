@@ -215,10 +215,38 @@ def baum_welch_algorithm(transition_matrix, emission_matrix, pi_matrix, emission
 
         if probability > log_prob:
             log_prob = probability
-            print("minore")
         else:
             print(iteration)
             break
+
+    return transition_new, emission_new
+
+def baum_welch_algorithm_v2(transition_matrix, emission_matrix, pi_matrix, emission_sequence, max_iterations, convergence_threshold):
+    log_prob = -math.inf
+    for iteration in range(max_iterations):
+        # Calculate the alpha, beta, and gamma matrix
+        alpha, scaling_factor = alpha_pass(
+            transition_matrix, emission_matrix, pi_matrix, emission_sequence)
+        beta = beta_pass(transition_matrix, emission_matrix,
+                         emission_sequence, scaling_factor)
+        gamma, di_gamma = calculate_gamma(
+            alpha, beta, transition_matrix, emission_matrix, emission_sequence)
+
+        # Re-estimate the model parameters
+        transition_new, emission_new, pi_new = re_estimate(
+            gamma, di_gamma, transition_matrix, emission_matrix, pi_matrix, emission_sequence)
+
+        # Calculate log-likelihood for the current iteration
+        probability = log_likelihood(scaling_factor)
+        if iteration == 0: print("Initial log-likelihood: {}".format(probability))
+
+        # Check for convergence based on the change in log-likelihood
+        if abs(probability - log_prob) < convergence_threshold:
+            print("Converged after {} iterations.".format(iteration + 1))
+            print("Convergence log-likelihood: {}".format(probability))
+            break
+
+        log_prob = probability
 
     return transition_new, emission_new
 
@@ -233,8 +261,8 @@ def main():
     # transition_matrix, emission_matrix, pi_matrix,  emission_sequence = readMatrix(data)
     transition_matrix, emission_matrix, pi_matrix, emission_sequence = readInputKattis()
 
-    transition_output, emission_output = baum_welch_algorithm(
-        transition_matrix, emission_matrix, pi_matrix, emission_sequence, 100)
+    transition_output, emission_output = baum_welch_algorithm_v2(
+        transition_matrix, emission_matrix, pi_matrix, emission_sequence, 1000000000, 0.00001)
 
     # Print the output
     answer(transition_output)
