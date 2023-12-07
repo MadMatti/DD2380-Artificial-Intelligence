@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # rewards: [golden_fish, jellyfish_1, jellyfish_2, ... , step]
-rewards = [10, -10, -10, 10, -10, 10, -10, 10, -10, 10, -10, 10, -10]
+rewards = [100, -10, -10, 10, -10, -10, -10, 10, -10, -10, -10, 10, -1]
 
 # Q learning learning rate
 alpha = 0
