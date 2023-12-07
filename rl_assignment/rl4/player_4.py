@@ -118,8 +118,9 @@ def epsilon_greedy(Q,
         if np.random.rand() < schedule:
             action = np.random.choice(all_actions)
         else:
-            action = np.argmax(Q[state])
+            action = np.nanargmax(Q[state])
         # ADD YOUR CODE SNIPPET BETWEENEX  4.2
+
 
     else:
         raise "Epsilon greedy type unknown"
@@ -202,7 +203,8 @@ class PlayerControllerRL(PlayerController, FishesModelling):
 
                 # ADD YOUR CODE SNIPPET BETWEEN EX 2.1 and 2.2
                 # Chose an action from all possible actions
-                action = np.nanargmax(Q[s_current])
+                action = epsilon_greedy(Q, s_current, list_pos, current_total_steps, self.epsilon_initial,
+                                        self.epsilon_final, self.annealing_timesteps, 'linear')
                 # ADD YOUR CODE SNIPPET BETWEEN EX 2.1 and 2.2
 
                 # ADD YOUR CODE SNIPPET BETWEEN EX 5
