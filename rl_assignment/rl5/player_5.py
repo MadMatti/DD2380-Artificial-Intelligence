@@ -358,5 +358,5 @@ class ScheduleLinear(object):
     def value(self, t):
         # ADD YOUR CODE SNIPPET BETWEEN EX 4.2
         # Return the annealed linear value
-        return self.initial_p
+        return self.initial_p - (self.initial_p - self.final_p) * t / self.schedule_timesteps
         # ADD YOUR CODE SNIPPET BETWEEN EX 4.2
